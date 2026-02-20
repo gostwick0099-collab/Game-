@@ -1,0 +1,189 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html>
+<head>
+<title>Babyy Girl Runner </title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#111;
+    font-family:Arial, sans-serif;
+}
+canvas{
+    display:block;
+    margin:auto;
+    background:linear-gradient(#ff9a9e,#fad0c4);
+}
+#gameOver{
+    position:absolute;
+    top:40%;
+    width:100%;
+    text-align:center;
+    color:white;
+    font-size:28px;
+    display:none;
+}
+button{
+    padding:10px 20px;
+    font-size:18px;
+    margin-top:15px;
+    border:none;
+    background:#ff4d6d;
+    color:white;
+    border-radius:8px;
+}
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<div id="gameOver">
+Game Over <br>
+Give Me Kiss <br>
+<button onclick="restart()">Play Again </button>
+</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const lanes = [100, 200, 300];
+
+let player = {
+    lane: 1,
+    width: 40,
+    height: 60,
+    y: 500,
+    velocityY: 0,
+    jumping: false
+};
+
+let gravity = 0.8;
+let obstacles = [];
+let speed = 6;
+let score = 0;
+let gameRunning = true;
+
+function spawnObstacle(){
+    if(!gameRunning) return;
+    let lane = Math.floor(Math.random()*3);
+    obstacles.push({
+        lane: lane,
+        x: lanes[lane] - 20,
+        y: -60,
+        width: 40,
+        height: 60
+    });
+}
+setInterval(spawnObstacle, 1200);
+
+function drawPlayer(){
+    let x = lanes[player.lane] - 20;
+    ctx.fillStyle="red";
+    ctx.fillRect(x, player.y - player.height, player.width, player.height);
+}
+
+function drawObstacles(){
+    ctx.fillStyle="black";
+    obstacles.forEach(o=>{
+        ctx.fillRect(o.x, o.y, o.width, o.height);
+    });
+}
+
+function update(){
+    if(!gameRunning) return;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Jump physics
+    if(player.jumping){
+        player.velocityY += gravity;
+        player.y += player.velocityY;
+
+        if(player.y >= 500){
+            player.y = 500;
+            player.jumping = false;
+            player.velocityY = 0;
+        }
+    }
+
+    // Move obstacles
+    for(let i = obstacles.length -1; i >=0; i--){
+        let o = obstacles[i];
+        o.y += speed;
+
+        // Collision detection
+        if(o.lane === player.lane &&
+           o.y + o.height > player.y - player.height &&
+           o.y < player.y){
+               gameOver();
+        }
+
+        // Remove passed obstacle
+        if(o.y > canvas.height){
+            obstacles.splice(i,1);
+            score++;
+        }
+    }
+
+    drawPlayer();
+    drawObstacles();
+
+    ctx.fillStyle="white";
+    ctx.font="20px Arial";
+    ctx.fillText("Score: " + score, 10, 30);
+
+    requestAnimationFrame(update);
+}
+
+function gameOver(){
+    gameRunning = false;
+    document.getElementById("gameOver").style.display="block";
+}
+
+function restart(){
+    obstacles = [];
+    score = 0;
+    gameRunning = true;
+    document.getElementById("gameOver").style.display="none";
+    update();
+}
+
+// Keyboard Controls (Laptop)
+document.addEventListener("keydown", function(e){
+    if(!gameRunning) return;
+
+    if(e.key === "ArrowLeft" && player.lane > 0) player.lane--;
+    if(e.key === "ArrowRight" && player.lane < 2) player.lane++;
+    if((e.key === "ArrowUp" || e.key === " ") && !player.jumping){
+        player.jumping = true;
+        player.velocityY = -15;
+    }
+});
+
+// Mobile Touch Controls
+canvas.addEventListener("touchstart", function(e){
+    if(!gameRunning) return;
+
+    let touchX = e.touches[0].clientX;
+    let touchY = e.touches[0].clientY;
+
+    if(touchY < 300 && !player.jumping){
+        player.jumping = true;
+        player.velocityY = -15;
+    }
+    else if(touchX < window.innerWidth / 2 && player.lane > 0){
+        player.lane--;
+    }
+    else if(touchX > window.innerWidth / 2 && player.lane < 2){
+        player.lane++;
+    }
+});
+
+update();
+</script>
+
+</body>
+</html>
