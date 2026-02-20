@@ -1,19 +1,17 @@
 <meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
 <html>
 <head>
-<title>Babyy Girl Runner </title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Endless Runner</title>
 <style>
 body{
     margin:0;
     overflow:hidden;
     background:#111;
-    font-family:Arial, sans-serif;
 }
 canvas{
     display:block;
     margin:auto;
-    background:linear-gradient(#ff9a9e,#fad0c4);
+    background:linear-gradient(#4facfe,#00f2fe);
 }
 #gameOver{
     position:absolute;
@@ -21,17 +19,13 @@ canvas{
     width:100%;
     text-align:center;
     color:white;
-    font-size:28px;
+    font-size:30px;
     display:none;
 }
 button{
     padding:10px 20px;
     font-size:18px;
     margin-top:15px;
-    border:none;
-    background:#ff4d6d;
-    color:white;
-    border-radius:8px;
 }
 </style>
 </head>
@@ -40,9 +34,8 @@ button{
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
 <div id="gameOver">
-Game Over <br>
-Give Me Kiss <br>
-<button onclick="restart()">Play Again </button>
+Game Over<br>
+<button onclick="restart()">Restart</button>
 </div>
 
 <script>
@@ -67,7 +60,6 @@ let score = 0;
 let gameRunning = true;
 
 function spawnObstacle(){
-    if(!gameRunning) return;
     let lane = Math.floor(Math.random()*3);
     obstacles.push({
         lane: lane,
@@ -97,7 +89,6 @@ function update(){
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // Jump physics
     if(player.jumping){
         player.velocityY += gravity;
         player.y += player.velocityY;
@@ -109,19 +100,16 @@ function update(){
         }
     }
 
-    // Move obstacles
     for(let i = obstacles.length -1; i >=0; i--){
         let o = obstacles[i];
         o.y += speed;
 
-        // Collision detection
         if(o.lane === player.lane &&
            o.y + o.height > player.y - player.height &&
            o.y < player.y){
                gameOver();
         }
 
-        // Remove passed obstacle
         if(o.y > canvas.height){
             obstacles.splice(i,1);
             score++;
@@ -151,7 +139,7 @@ function restart(){
     update();
 }
 
-// Keyboard Controls (Laptop)
+// KEYBOARD (for laptop)
 document.addEventListener("keydown", function(e){
     if(!gameRunning) return;
 
@@ -163,10 +151,8 @@ document.addEventListener("keydown", function(e){
     }
 });
 
-// Mobile Touch Controls
+// MOBILE TOUCH CONTROLS
 canvas.addEventListener("touchstart", function(e){
-    if(!gameRunning) return;
-
     let touchX = e.touches[0].clientX;
     let touchY = e.touches[0].clientY;
 
@@ -184,6 +170,5 @@ canvas.addEventListener("touchstart", function(e){
 
 update();
 </script>
-
 </body>
 </html>
